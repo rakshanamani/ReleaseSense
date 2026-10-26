@@ -1,0 +1,80 @@
+-- ============================================================================
+-- ReleaseSense: Intelligent Release Prediction Platform
+-- Database Schema for Oracle Database (12c / 19c / 21c / 23c)
+-- ============================================================================
+
+-- Clean up existing objects if re-running
+BEGIN
+   EXECUTE IMMEDIATE 'DROP TABLE RELEASE_PREDICTIONS CASCADE CONSTRAINTS';
+EXCEPTION
+   WHEN OTHERS THEN
+      IF SQLCODE != -942 THEN
+         RAISE;
+      END IF;
+END;
+/
+
+-- 1. Table Creation
+CREATE TABLE RELEASE_PREDICTIONS (
+    ID                     NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    CHANGED_FILES          NUMBER(6)       NOT NULL,
+    FAILED_TESTS           NUMBER(6)       NOT NULL,
+    CRITICAL_BUGS          NUMBER(6)       NOT NULL,
+    COVERAGE               NUMBER(5, 2)    NOT NULL,
+    PREVIOUS_FAILURE_RATE  NUMBER(5, 2)    NOT NULL,
+    RISK_LEVEL             VARCHAR2(20)    NOT NULL,
+    CONFIDENCE_PERCENT     NUMBER(5, 2)    NOT NULL,
+    RECOMMENDATION         VARCHAR2(1000)  NOT NULL,
+    CREATED_AT             TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT CHK_RISK_LEVEL CHECK (RISK_LEVEL IN ('Low', 'Medium', 'High')),
+    CONSTRAINT CHK_COVERAGE CHECK (COVERAGE >= 0 AND COVERAGE <= 100),
+    CONSTRAINT CHK_PREV_FAIL CHECK (PREVIOUS_FAILURE_RATE >= 0 AND PREVIOUS_FAILURE_RATE <= 100)
+);
+
+-- 2. Performance Indexes
+CREATE INDEX IDX_REL_PRED_CREATED ON RELEASE_PREDICTIONS(CREATED_AT DESC);
+CREATE INDEX IDX_REL_PRED_RISK ON RELEASE_PREDICTIONS(RISK_LEVEL);
+
+-- Comments on table and columns
+COMMENT ON TABLE RELEASE_PREDICTIONS IS 'Stores historical and predicted software release risk evaluations';
+COMMENT ON COLUMN RELEASE_PREDICTIONS.ID IS 'Unique surrogate primary key';
+COMMENT ON COLUMN RELEASE_PREDICTIONS.CHANGED_FILES IS 'Total number of modified, added, or deleted files in release';
+COMMENT ON COLUMN RELEASE_PREDICTIONS.FAILED_TESTS IS 'Count of failing automated tests at release stage';
+COMMENT ON COLUMN RELEASE_PREDICTIONS.CRITICAL_BUGS IS 'Number of unresolved P0/P1 bugs associated with release';
+COMMENT ON COLUMN RELEASE_PREDICTIONS.COVERAGE IS 'Unit and integration test code coverage percentage';
+COMMENT ON COLUMN RELEASE_PREDICTIONS.PREVIOUS_FAILURE_RATE IS 'Historical deployment failure percentage for this pipeline';
+COMMENT ON COLUMN RELEASE_PREDICTIONS.RISK_LEVEL IS 'Predicted release risk level: Low, Medium, High';
+COMMENT ON COLUMN RELEASE_PREDICTIONS.CONFIDENCE_PERCENT IS 'Machine learning model confidence score (0-100)';
+COMMENT ON COLUMN RELEASE_PREDICTIONS.RECOMMENDATION IS 'Actionable deployment advice and mitigation instructions';
+COMMENT ON COLUMN RELEASE_PREDICTIONS.CREATED_AT IS 'Timestamp when the prediction was evaluated and recorded';
+
+-- 3. Seed Sample Historical Data
+INSERT INTO RELEASE_PREDICTIONS (CHANGED_FILES, FAILED_TESTS, CRITICAL_BUGS, COVERAGE, PREVIOUS_FAILURE_RATE, RISK_LEVEL, CONFIDENCE_PERCENT, RECOMMENDATION, CREATED_AT)
+VALUES (18, 0, 0, 88.50, 2.50, 'Low', 96.40, 'LOW RISK: Release meets automated quality gates and is recommended for deployment. Proceed with automated Blue/Green pipeline.', CURRENT_TIMESTAMP - INTERVAL '7' DAY);
+
+INSERT INTO RELEASE_PREDICTIONS (CHANGED_FILES, FAILED_TESTS, CRITICAL_BUGS, COVERAGE, PREVIOUS_FAILURE_RATE, RISK_LEVEL, CONFIDENCE_PERCENT, RECOMMENDATION, CREATED_AT)
+VALUES (142, 2, 1, 64.20, 24.00, 'Medium', 88.10, 'MODERATE RISK: Release requires targeted manual verification and canary deployment. Deploy to 5% canary ring.', CURRENT_TIMESTAMP - INTERVAL '5' DAY);
+
+INSERT INTO RELEASE_PREDICTIONS (CHANGED_FILES, FAILED_TESTS, CRITICAL_BUGS, COVERAGE, PREVIOUS_FAILURE_RATE, RISK_LEVEL, CONFIDENCE_PERCENT, RECOMMENDATION, CREATED_AT)
+VALUES (310, 8, 3, 42.10, 45.00, 'High', 98.70, 'HIGH RISK RELEASE: Deployment should be blocked immediately until critical blockers are resolved. Resolve 3 critical bugs.', CURRENT_TIMESTAMP - INTERVAL '3' DAY);
+
+INSERT INTO RELEASE_PREDICTIONS (CHANGED_FILES, FAILED_TESTS, CRITICAL_BUGS, COVERAGE, PREVIOUS_FAILURE_RATE, RISK_LEVEL, CONFIDENCE_PERCENT, RECOMMENDATION, CREATED_AT)
+VALUES (32, 0, 0, 91.00, 4.00, 'Low', 95.20, 'LOW RISK: Release meets automated quality gates and is recommended for deployment. Proceed with automated deployment.', CURRENT_TIMESTAMP - INTERVAL '2' DAY);
+
+INSERT INTO RELEASE_PREDICTIONS (CHANGED_FILES, FAILED_TESTS, CRITICAL_BUGS, COVERAGE, PREVIOUS_FAILURE_RATE, RISK_LEVEL, CONFIDENCE_PERCENT, RECOMMENDATION, CREATED_AT)
+VALUES (95, 3, 0, 71.50, 18.50, 'Medium', 82.60, 'MODERATE RISK: Release requires targeted manual verification and canary deployment. Investigate 3 failing tests.', CURRENT_TIMESTAMP - INTERVAL '1' DAY);
+
+COMMIT;
+
+-- 4. Verification and Query Helper Scripts
+-- (A) Retrieve last 50 predictions
+SELECT ID, CHANGED_FILES, FAILED_TESTS, CRITICAL_BUGS, COVERAGE, PREVIOUS_FAILURE_RATE, RISK_LEVEL, CONFIDENCE_PERCENT, TO_CHAR(CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_STR
+FROM RELEASE_PREDICTIONS
+ORDER BY CREATED_AT DESC
+FETCH FIRST 50 ROWS ONLY;
+
+-- (B) Risk Distribution Summary
+SELECT RISK_LEVEL, COUNT(*) AS TOTAL_COUNT, ROUND(AVG(CONFIDENCE_PERCENT), 2) AS AVG_CONFIDENCE, ROUND(AVG(COVERAGE), 2) AS AVG_COVERAGE
+FROM RELEASE_PREDICTIONS
+GROUP BY RISK_LEVEL
+ORDER BY TOTAL_COUNT DESC;

@@ -1,0 +1,64 @@
+{
+  "model_type": "RandomForestClassifier",
+  "n_estimators": 100,
+  "features": [
+    "changed_files",
+    "failed_tests",
+    "critical_bugs",
+    "coverage",
+    "previous_failure_rate"
+  ],
+  "classes": [
+    "High",
+    "Low",
+    "Medium"
+  ],
+  "accuracy": 0.9917,
+  "metrics_report": {
+    "High": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 31.0
+    },
+    "Low": {
+      "precision": 1.0,
+      "recall": 0.9787234042553191,
+      "f1-score": 0.989247311827957,
+      "support": 47.0
+    },
+    "Medium": {
+      "precision": 0.9767441860465116,
+      "recall": 1.0,
+      "f1-score": 0.9882352941176471,
+      "support": 42.0
+    },
+    "accuracy": 0.9916666666666667,
+    "macro avg": {
+      "precision": 0.9922480620155039,
+      "recall": 0.9929078014184397,
+      "f1-score": 0.992494201981868,
+      "support": 120.0
+    },
+    "weighted avg": {
+      "precision": 0.991860465116279,
+      "recall": 0.9916666666666667,
+      "f1-score": 0.9916708834071263,
+      "support": 120.0
+    }
+  },
+  "feature_importances": {
+    "changed_files": 0.0665,
+    "failed_tests": 0.2759,
+    "critical_bugs": 0.2413,
+    "coverage": 0.1172,
+    "previous_failure_rate": 0.2991
+  },
+  "dataset_info": {
+    "source": "Synthetic demonstration dataset (data/release_metrics.csv)",
+    "total_records": 600,
+    "train_size": 480,
+    "test_size": 120
+  },
+  "trained_at": "2026-10-26T13:39:42.166400Z"
+}

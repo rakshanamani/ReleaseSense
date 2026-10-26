@@ -1,0 +1,54 @@
+# Maven
+target/
+*.war
+*.ear
+*.nar
+*.class
+
+# Java / JVM
+*.jar
+!/src/main/resources/*.jar
+hs_err_pid*
+replay_pid*
+
+# Python & Machine Learning
+ml-service/venv/
+ml-service/env/
+ml-service/.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Sensitive Configuration & Environment Files
+.env
+.env.local
+.env.*.local
+*.secret.yaml.local
+credentials.json
+*.key
+*.pem
+
+# IDEs & Editors
+.idea/
+*.iml
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# OS Generated
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Logs
+*.log
+logs/

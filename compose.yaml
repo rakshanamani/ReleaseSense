@@ -1,0 +1,72 @@
+services:
+  # ============================================================================
+  # Python Machine Learning Microservice
+  # ============================================================================
+  ml-service:
+    build:
+      context: ./ml-service
+      dockerfile: Dockerfile
+    container_name: releasesense-ml
+    ports:
+      - "5001:5001"
+    environment:
+      - PORT=5001
+      - PYTHONUNBUFFERED=1
+    networks:
+      - releasesense-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  # ============================================================================
+  # Java 17 Jakarta Servlets Application on Apache Tomcat 11
+  # ============================================================================
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: releasesense-web
+    ports:
+      - "8080:8080"
+    environment:
+      - ML_SERVICE_URL=http://ml-service:5001/predict
+      # Database connection: provide values or leave empty for embedded engine
+      - ORACLE_DB_URL=${ORACLE_DB_URL:-}
+      - ORACLE_DB_USER=${ORACLE_DB_USER:-}
+      - ORACLE_DB_PASSWORD=${ORACLE_DB_PASSWORD:-}
+    depends_on:
+      ml-service:
+        condition: service_healthy
+    networks:
+      - releasesense-net
+    restart: unless-stopped
+
+  # ============================================================================
+  # Optional Oracle Database 23c Free Container
+  # Run with: docker compose --profile with-oracle up
+  # ============================================================================
+  oracle-db:
+    image: container-registry.oracle.com/database/free:latest
+    container_name: releasesense-oracle
+    profiles: ["with-oracle"]
+    ports:
+      - "1521:1521"
+    environment:
+      - ORACLE_PWD=ReleaseSense2026#
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+      - ./scripts/schema.sql:/container-entrypoint-initdb.d/01_schema.sql
+    networks:
+      - releasesense-net
+
+networks:
+  releasesense-net:
+    driver: bridge
+
+volumes:
+  oracle-data:
+    driver: local

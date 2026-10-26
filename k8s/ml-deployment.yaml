@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: releasesense-ml
+  labels:
+    app: releasesense
+    tier: ml-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: releasesense
+      tier: ml-service
+  template:
+    metadata:
+      labels:
+        app: releasesense
+        tier: ml-service
+    spec:
+      containers:
+        - name: ml-service
+          image: releasesense-ml:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5001
+              name: http
+          env:
+            - name: PORT
+              value: "5001"
+            - name: PYTHONUNBUFFERED
+              value: "1"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5001
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5001
+            initialDelaySeconds: 5
+            periodSeconds: 10

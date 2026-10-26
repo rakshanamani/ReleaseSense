@@ -1,0 +1,42 @@
+---
+# ============================================================================
+# Service: Internal ClusterIP for Python Machine Learning Prediction API
+# ============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: releasesense-ml-service
+  labels:
+    app: releasesense
+    tier: ml-service
+spec:
+  type: ClusterIP
+  selector:
+    app: releasesense
+    tier: ml-service
+  ports:
+    - name: http
+      port: 5001
+      targetPort: 5001
+
+---
+# ============================================================================
+# Service: NodePort for Java Web Application Dashboard (Tomcat 11)
+# ============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: releasesense-web-service
+  labels:
+    app: releasesense
+    tier: frontend-backend
+spec:
+  type: NodePort
+  selector:
+    app: releasesense
+    tier: frontend-backend
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      nodePort: 30080
