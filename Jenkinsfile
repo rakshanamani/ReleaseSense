@@ -37,34 +37,32 @@ pipeline {
         // Stage 2: Python Environment & Dependencies
         // ====================================================================
         stage('Python Setup & ML Dependencies') {
-            steps {
-                echo "==> [Stage 2/8] Setting up Python virtual environment and installing dependencies..."
-                dir('ml-service') {
-                    sh '''
-                        python3 -m venv venv || python -m venv venv
-                        . venv/bin/activate || . venv/Scripts/activate
-                        pip install --upgrade pip
-                        pip install -r requirements.txt
-                    '''
-                }
-            }
+    steps {
+        echo "==> [Stage 2/8] Setting up Python virtual environment and installing dependencies..."
+        dir('ml-service') {
+            bat '''
+                py -3 -m venv venv
+                venv\\Scripts\\python.exe -m pip install --upgrade pip
+                venv\\Scripts\\python.exe -m pip install -r requirements.txt
+            '''
         }
+    }
+}
 
         // ====================================================================
         // Stage 3: ML Model Training & Unit Evaluation
         // ====================================================================
         stage('Train & Evaluate ML Model') {
-            steps {
-                echo "==> [Stage 3/8] Training Random Forest classifier and validating test benchmarks..."
-                dir('ml-service') {
-                    sh '''
-                        . venv/bin/activate || . venv/Scripts/activate
-                        python train_model.py
-                        python test_api.py
-                    '''
-                }
-            }
+    steps {
+        echo "==> [Stage 3/8] Training Random Forest classifier and validating test benchmarks..."
+        dir('ml-service') {
+            bat '''
+                venv\\Scripts\\python.exe train_model.py
+                venv\\Scripts\\python.exe test_api.py
+            '''
         }
+    }
+}
 
         // ====================================================================
         // Stage 4: Java Maven Build & Unit Testing
@@ -72,7 +70,7 @@ pipeline {
         stage('Java Maven Build & Test') {
             steps {
                 echo "==> [Stage 4/8] Compiling Java 17 Jakarta Servlets and running JUnit test suite..."
-                sh 'mvn clean test'
+                bat 'mvn clean test'
             }
             post {
                 always {
@@ -87,7 +85,7 @@ pipeline {
         stage('Package WAR') {
             steps {
                 echo "==> [Stage 5/8] Packaging Tomcat 11 WAR distribution..."
-                sh 'mvn package -DskipTests'
+                bat 'mvn package -DskipTests'
                 archiveArtifacts artifacts: 'target/*.war', fingerprint: true
             }
         }
@@ -96,54 +94,54 @@ pipeline {
         // Stage 6: Docker Image Creation
         // ====================================================================
         stage('Docker Image Creation') {
-            steps {
-                echo "==> [Stage 6/8] Building Docker container images..."
-                sh """
-                    docker build -t ${IMAGE_ML}:${BUILD_TAG} -t ${IMAGE_ML}:latest ./ml-service
-                    docker build -t ${IMAGE_WEB}:${BUILD_TAG} -t ${IMAGE_WEB}:latest .
-                """
-            }
-        }
+    steps {
+        echo "==> [Stage 6/8] Building Docker container images..."
+        bat """
+            docker build -t ${IMAGE_ML}:${BUILD_TAG} -t ${IMAGE_ML}:latest ./ml-service
+            docker build -t ${IMAGE_WEB}:${BUILD_TAG} -t ${IMAGE_WEB}:latest .
+        """
+    }
+}
 
         // ====================================================================
         // Stage 7: Docker Image Publishing to Registry
         // ====================================================================
-        stage('Publish Docker Images') {
-            steps {
-                echo "==> [Stage 7/8] Publishing Docker images to container registry..."
-                withCredentials([usernamePassword(credentialsId: env.REGISTRY_CREDENTIALS_ID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh """
-                        echo "\$DOCKER_PASS" | docker login ${REGISTRY_HOST} -u "\$DOCKER_USER" --password-stdin
-                        docker push ${IMAGE_ML}:${BUILD_TAG}
-                        docker push ${IMAGE_ML}:latest
-                        docker push ${IMAGE_WEB}:${BUILD_TAG}
-                        docker push ${IMAGE_WEB}:latest
-                        docker logout ${REGISTRY_HOST}
-                    """
-                }
-            }
+       stage('Publish Docker Images') {
+    steps {
+        echo "==> [Stage 7/8] Publishing Docker images to container registry..."
+        withCredentials([usernamePassword(
+            credentialsId: env.REGISTRY_CREDENTIALS_ID,
+            usernameVariable: 'DOCKER_USER',
+            passwordVariable: 'DOCKER_PASS'
+        )]) {
+            bat '''
+                echo %DOCKER_PASS% | docker login docker.io -u %DOCKER_USER% --password-stdin
+                docker push %IMAGE_ML%:%BUILD_TAG%
+                docker push %IMAGE_ML%:latest
+                docker push %IMAGE_WEB%:%BUILD_TAG%
+                docker push %IMAGE_WEB%:latest
+                docker logout docker.io
+            '''
         }
+    }
+}
 
         // ====================================================================
         // Stage 8: Kubernetes Deployment (Minikube / Cluster)
         // ====================================================================
-        stage('Kubernetes Deployment') {
-            steps {
-                echo "==> [Stage 8/8] Deploying ReleaseSense workloads to Kubernetes cluster..."
-                sh '''
-                    # Apply secrets, deployments, and services
-                    kubectl apply -f k8s/oracle-secret.yaml
-                    kubectl apply -f k8s/ml-deployment.yaml
-                    kubectl apply -f k8s/web-deployment.yaml
-                    kubectl apply -f k8s/services.yaml
+       stage('Kubernetes Deployment') {
+    steps {
+        echo "==> [Stage 8/8] Deploying ReleaseSense workloads to Kubernetes cluster..."
+        bat '''
+            kubectl apply -f k8s/ml-deployment.yaml
+            kubectl apply -f k8s/web-deployment.yaml
+            kubectl apply -f k8s/services.yaml
 
-                    # Verify rollout status
-                    kubectl rollout status deployment/releasesense-ml --timeout=120s
-                    kubectl rollout status deployment/releasesense-web --timeout=120s
-                '''
-            }
-        }
+            kubectl rollout status deployment/releasesense-ml --timeout=120s
+            kubectl rollout status deployment/releasesense-web --timeout=120s
+        '''
     }
+} 
 
     post {
         success {
