@@ -16,6 +16,7 @@ pipeline {
         KUBE_CREDENTIALS_ID      = 'k8s-kubeconfig'
         MINIKUBE_HOME = 'C:\\Users\\raksh'
 KUBECONFIG = 'C:\\Users\\raksh\\.kube\\config'
+    KUBECTL_HOME = 'C:\\Users\\raksh\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin'
     }
 
     options {
@@ -134,12 +135,11 @@ stage('Kubernetes Deployment') {
         echo "==> [Stage 8/8] Deploying ReleaseSense workloads to Minikube..."
 
         bat '''
-            kubectl apply -f k8s/ml-deployment.yaml
-            kubectl apply -f k8s/web-deployment.yaml
-            kubectl apply -f k8s/services.yaml
-
-            kubectl rollout status deployment/releasesense-ml --timeout=180s
-            kubectl rollout status deployment/releasesense-web --timeout=180s
+            "%KUBECTL_HOME%\kubectl.exe" apply -f k8s/ml-deployment.yaml
+"%KUBECTL_HOME%\kubectl.exe" apply -f k8s/web-deployment.yaml
+"%KUBECTL_HOME%\kubectl.exe" apply -f k8s/services.yaml
+"%KUBECTL_HOME%\kubectl.exe" rollout status deployment/releasesense-ml --timeout=180s
+"%KUBECTL_HOME%\kubectl.exe" rollout status deployment/releasesense-web --timeout=180s
         '''
     }
 }
