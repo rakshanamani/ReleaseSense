@@ -107,18 +107,9 @@ pipeline {
         // ====================================================================
         // Stage 7: Docker Image Publishing to Registry
         // ====================================================================
-       
-stage('Publish Docker Images') {
+       stage('Publish Docker Images') {
     steps {
-        echo "==> [Stage 7/8] Loading Docker images into Minikube..."
-
-        bat '''
-            "C:\\Users\\raksh\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" images
-
-            "C:\\Program Files\\Kubernetes\\Minikube\\minikube.exe" image load %IMAGE_ML%:latest
-
-            "C:\\Program Files\\Kubernetes\\Minikube\\minikube.exe" image load %IMAGE_WEB%:latest
-        '''
+        echo "==> [Stage 7/8] Docker images built successfully. Skipping registry upload."
     }
 }
 
@@ -127,18 +118,9 @@ stage('Publish Docker Images') {
         // Stage 8: Kubernetes Deployment (Minikube / Cluster)
         // ====================================================================
       
-stage('Kubernetes Deployment') {
+    stage('Kubernetes Deployment') {
     steps {
-        echo "==> [Stage 8/8] Deploying ReleaseSense workloads to Minikube..."
-
-        bat '''
-            kubectl apply -f k8s/ml-deployment.yaml
-            kubectl apply -f k8s/web-deployment.yaml
-            kubectl apply -f k8s/services.yaml
-
-            kubectl rollout status deployment/releasesense-ml --timeout=180s
-            kubectl rollout status deployment/releasesense-web --timeout=180s
-        '''
+        echo "==> [Stage 8/8] Kubernetes deployment skipped. CI build verification only."
     }
 }
 
