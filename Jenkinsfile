@@ -135,11 +135,11 @@ stage('Kubernetes Deployment') {
         echo "==> [Stage 8/8] Deploying ReleaseSense workloads to Minikube..."
 
         bat '''
-            "%KUBECTL_HOME%\kubectl.exe" apply -f k8s/ml-deployment.yaml
-"%KUBECTL_HOME%\kubectl.exe" apply -f k8s/web-deployment.yaml
-"%KUBECTL_HOME%\kubectl.exe" apply -f k8s/services.yaml
-"%KUBECTL_HOME%\kubectl.exe" rollout status deployment/releasesense-ml --timeout=180s
-"%KUBECTL_HOME%\kubectl.exe" rollout status deployment/releasesense-web --timeout=180s
+            "%KUBECTL_HOME%\\kubectl.exe" apply -f k8s/ml-deployment.yaml
+"%KUBECTL_HOME%\\kubectl.exe" apply -f k8s/web-deployment.yaml
+"%KUBECTL_HOME%\\kubectl.exe" apply -f k8s/services.yaml
+"%KUBECTL_HOME%\\kubectl.exe" rollout status deployment/releasesense-ml --timeout=180s
+"%KUBECTL_HOME%\\kubectl.exe" rollout status deployment/releasesense-web --timeout=180s
         '''
     }
 }
