@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: ml-service
-          image: rakshana16/releasesense-ml:latest
+          image: releasesense-ml-service:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5001
