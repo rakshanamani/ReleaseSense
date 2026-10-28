@@ -30,6 +30,7 @@ htmlcov/
 credentials.json
 *.key
 *.pem
+k8s/oracle-secret.yaml
 
 # IDEs & Editors
 .idea/

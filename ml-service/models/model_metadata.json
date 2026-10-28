@@ -48,11 +48,11 @@
     }
   },
   "feature_importances": {
-    "changed_files": 0.0665,
-    "failed_tests": 0.2759,
-    "critical_bugs": 0.2413,
-    "coverage": 0.1172,
-    "previous_failure_rate": 0.2991
+    "changed_files": 0.067,
+    "failed_tests": 0.2586,
+    "critical_bugs": 0.2378,
+    "coverage": 0.147,
+    "previous_failure_rate": 0.2895
   },
   "dataset_info": {
     "source": "Synthetic demonstration dataset (data/release_metrics.csv)",
@@ -60,5 +60,5 @@
     "train_size": 480,
     "test_size": 120
   },
-  "trained_at": "2026-10-26T13:39:42.166400Z"
+  "trained_at": "2026-10-26T14:53:29.283622+00:00"
 }

@@ -93,39 +93,49 @@ public class DatabaseConfig {
     }
 
     private static void setupFallbackSchema() {
+    try {
+        Class.forName(FALLBACK_DRIVER);
+
         try (Connection conn = DriverManager.getConnection(FALLBACK_URL, "sa", "");
              Statement stmt = conn.createStatement()) {
 
             String createTableSql = "CREATE TABLE IF NOT EXISTS RELEASE_PREDICTIONS (" +
-                    "    ID NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY," +
-                    "    CHANGED_FILES NUMBER(6) NOT NULL," +
-                    "    FAILED_TESTS NUMBER(6) NOT NULL," +
-                    "    CRITICAL_BUGS NUMBER(6) NOT NULL," +
-                    "    COVERAGE NUMBER(5, 2) NOT NULL," +
-                    "    PREVIOUS_FAILURE_RATE NUMBER(5, 2) NOT NULL," +
-                    "    RISK_LEVEL VARCHAR2(20) NOT NULL," +
-                    "    CONFIDENCE_PERCENT NUMBER(5, 2) NOT NULL," +
-                    "    RECOMMENDATION VARCHAR2(1000) NOT NULL," +
-                    "    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL" +
+                    "ID NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY," +
+                    "CHANGED_FILES NUMBER(6) NOT NULL," +
+                    "FAILED_TESTS NUMBER(6) NOT NULL," +
+                    "CRITICAL_BUGS NUMBER(6) NOT NULL," +
+                    "COVERAGE NUMBER(5, 2) NOT NULL," +
+                    "PREVIOUS_FAILURE_RATE NUMBER(5, 2) NOT NULL," +
+                    "RISK_LEVEL VARCHAR2(20) NOT NULL," +
+                    "CONFIDENCE_PERCENT NUMBER(5, 2) NOT NULL," +
+                    "RECOMMENDATION VARCHAR2(1000) NOT NULL," +
+                    "CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL" +
                     ")";
+
             stmt.execute(createTableSql);
 
-            // Populate initial sample seed records if table is empty
-            var rs = stmt.executeQuery("SELECT COUNT(*) FROM RELEASE_PREDICTIONS");
-            if (rs.next() && rs.getInt(1) == 0) {
-                stmt.executeUpdate("INSERT INTO RELEASE_PREDICTIONS (CHANGED_FILES, FAILED_TESTS, CRITICAL_BUGS, COVERAGE, PREVIOUS_FAILURE_RATE, RISK_LEVEL, CONFIDENCE_PERCENT, RECOMMENDATION) " +
-                        "VALUES (18, 0, 0, 88.50, 2.50, 'Low', 96.40, 'LOW RISK: Release meets automated quality gates. Recommended for deployment.')");
-                stmt.executeUpdate("INSERT INTO RELEASE_PREDICTIONS (CHANGED_FILES, FAILED_TESTS, CRITICAL_BUGS, COVERAGE, PREVIOUS_FAILURE_RATE, RISK_LEVEL, CONFIDENCE_PERCENT, RECOMMENDATION) " +
-                        "VALUES (142, 2, 1, 64.20, 24.00, 'Medium', 88.10, 'MODERATE RISK: Release requires targeted manual verification and canary deployment.')");
-                stmt.executeUpdate("INSERT INTO RELEASE_PREDICTIONS (CHANGED_FILES, FAILED_TESTS, CRITICAL_BUGS, COVERAGE, PREVIOUS_FAILURE_RATE, RISK_LEVEL, CONFIDENCE_PERCENT, RECOMMENDATION) " +
-                        "VALUES (310, 8, 3, 42.10, 45.00, 'High', 98.70, 'HIGH RISK RELEASE: Deployment blocked immediately until critical bugs and test failures are resolved.')");
+            try (var rs = stmt.executeQuery("SELECT COUNT(*) FROM RELEASE_PREDICTIONS")) {
+                if (rs.next() && rs.getInt(1) == 0) {
+
+                    stmt.executeUpdate("INSERT INTO RELEASE_PREDICTIONS (CHANGED_FILES, FAILED_TESTS, CRITICAL_BUGS, COVERAGE, PREVIOUS_FAILURE_RATE, RISK_LEVEL, CONFIDENCE_PERCENT, RECOMMENDATION) " +
+                            "VALUES (18, 0, 0, 88.50, 2.50, 'Low', 96.40, 'LOW RISK: Release meets automated quality gates. Recommended for deployment.')");
+
+                    stmt.executeUpdate("INSERT INTO RELEASE_PREDICTIONS (CHANGED_FILES, FAILED_TESTS, CRITICAL_BUGS, COVERAGE, PREVIOUS_FAILURE_RATE, RISK_LEVEL, CONFIDENCE_PERCENT, RECOMMENDATION) " +
+                            "VALUES (142, 2, 1, 64.20, 24.00, 'Medium', 88.10, 'MODERATE RISK: Release requires targeted manual verification and canary deployment.')");
+
+                    stmt.executeUpdate("INSERT INTO RELEASE_PREDICTIONS (CHANGED_FILES, FAILED_TESTS, CRITICAL_BUGS, COVERAGE, PREVIOUS_FAILURE_RATE, RISK_LEVEL, CONFIDENCE_PERCENT, RECOMMENDATION) " +
+                            "VALUES (310, 8, 3, 42.10, 45.00, 'High', 98.70, 'HIGH RISK RELEASE: Deployment blocked immediately until critical bugs and test failures are resolved.')");
+                }
             }
 
             LOGGER.info("[ReleaseSense DB] Local fallback schema initialized with seed data.");
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Failed to initialize fallback database schema: " + e.getMessage(), e);
         }
+
+    } catch (ClassNotFoundException | SQLException e) {
+        LOGGER.log(Level.SEVERE,
+                "Failed to initialize fallback database schema: " + e.getMessage(), e);
     }
+}
 
     public static boolean isOracleDatabaseActive() {
         return isOracleActive;
