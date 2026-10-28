@@ -36,12 +36,12 @@ pipeline {
         // ====================================================================
         // Stage 2: Python Environment & Dependencies
         // ====================================================================
-        stage('Python Setup & ML Dependencies') {
+      stage('Python Setup & ML Dependencies') {
     steps {
         echo "==> [Stage 2/8] Setting up Python virtual environment and installing dependencies..."
         dir('ml-service') {
             bat '''
-                py -3 -m venv venv
+                "C:\\Program Files\\Python314\\python.exe" -m venv venv
                 venv\\Scripts\\python.exe -m pip install --upgrade pip
                 venv\\Scripts\\python.exe -m pip install -r requirements.txt
             '''
