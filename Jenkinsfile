@@ -107,43 +107,41 @@ pipeline {
         // ====================================================================
         // Stage 7: Docker Image Publishing to Registry
         // ====================================================================
-       stage('Publish Docker Images') {
+       
+stage('Publish Docker Images') {
     steps {
-        echo "==> [Stage 7/8] Publishing Docker images to container registry..."
-        withCredentials([usernamePassword(
-            credentialsId: env.REGISTRY_CREDENTIALS_ID,
-            usernameVariable: 'DOCKER_USER',
-            passwordVariable: 'DOCKER_PASS'
-        )]) {
-           bat '''
-    @echo off
-    echo %DOCKER_PASS% | "C:\\Users\\raksh\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" login docker.io -u %DOCKER_USER% --password-stdin
-    "C:\\Users\\raksh\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" push %IMAGE_ML%:%BUILD_TAG%
-    "C:\\Users\\raksh\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" push %IMAGE_ML%:latest
-    "C:\\Users\\raksh\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" push %IMAGE_WEB%:%BUILD_TAG%
-    "C:\\Users\\raksh\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" push %IMAGE_WEB%:latest
-    "C:\\Users\\raksh\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" logout docker.io
-'''
-        }
+        echo "==> [Stage 7/8] Loading Docker images into Minikube..."
+
+        bat '''
+            "C:\\Users\\raksh\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" images
+
+            "C:\\Program Files\\Kubernetes\\Minikube\\minikube.exe" image load %IMAGE_ML%:latest
+
+            "C:\\Program Files\\Kubernetes\\Minikube\\minikube.exe" image load %IMAGE_WEB%:latest
+        '''
     }
 }
+
 
         // ====================================================================
         // Stage 8: Kubernetes Deployment (Minikube / Cluster)
         // ====================================================================
-       stage('Kubernetes Deployment') {
+      
+stage('Kubernetes Deployment') {
     steps {
-        echo "==> [Stage 8/8] Deploying ReleaseSense workloads to Kubernetes cluster..."
+        echo "==> [Stage 8/8] Deploying ReleaseSense workloads to Minikube..."
+
         bat '''
             kubectl apply -f k8s/ml-deployment.yaml
             kubectl apply -f k8s/web-deployment.yaml
             kubectl apply -f k8s/services.yaml
 
-            kubectl rollout status deployment/releasesense-ml --timeout=120s
-            kubectl rollout status deployment/releasesense-web --timeout=120s
+            kubectl rollout status deployment/releasesense-ml --timeout=180s
+            kubectl rollout status deployment/releasesense-web --timeout=180s
         '''
     }
-} 
+}
+
     }
 
     post {

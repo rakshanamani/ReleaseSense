@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: web-app
-          image: releasesense-web:latest
+          image: rakshana16/releasesense-web:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
