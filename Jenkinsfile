@@ -14,6 +14,8 @@ pipeline {
         GIT_CREDENTIALS_ID       = 'github-access-token'
         REGISTRY_CREDENTIALS_ID  = 'dockerhub-credentials'
         KUBE_CREDENTIALS_ID      = 'k8s-kubeconfig'
+        MINIKUBE_HOME = 'C:\\Users\\raksh'
+KUBECONFIG = 'C:\\Users\\raksh\\.kube\\config'
     }
 
     options {
