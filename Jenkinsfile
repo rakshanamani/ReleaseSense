@@ -93,12 +93,13 @@ pipeline {
         // ====================================================================
         // Stage 6: Docker Image Creation
         // ====================================================================
-        stage('Docker Image Creation') {
+      stage('Docker Image Creation') {
     steps {
         echo "==> [Stage 6/8] Building Docker container images..."
         bat """
-            docker build -t ${IMAGE_ML}:${BUILD_TAG} -t ${IMAGE_ML}:latest ./ml-service
-            docker build -t ${IMAGE_WEB}:${BUILD_TAG} -t ${IMAGE_WEB}:latest .
+            "C:\\Users\\raksh\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" build -t ${IMAGE_ML}:${BUILD_TAG} -t ${IMAGE_ML}:latest ./ml-service
+
+            "C:\\Users\\raksh\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" build -t ${IMAGE_WEB}:${BUILD_TAG} -t ${IMAGE_WEB}:latest .
         """
     }
 }
