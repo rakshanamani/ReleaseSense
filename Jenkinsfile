@@ -5,7 +5,7 @@ pipeline {
         // Build & Versioning Configuration
         APP_NAME                 = 'releasesense'
         REGISTRY_HOST            = 'docker.io'
-        REGISTRY_USER            = 'releasesense'
+        REGISTRY_USER            = 'rakshana16'
         IMAGE_WEB                = "${REGISTRY_USER}/releasesense-web"
         IMAGE_ML                 = "${REGISTRY_USER}/releasesense-ml"
         BUILD_TAG                = "${env.BUILD_NUMBER}"
@@ -115,14 +115,15 @@ pipeline {
             usernameVariable: 'DOCKER_USER',
             passwordVariable: 'DOCKER_PASS'
         )]) {
-            bat '''
-                echo %DOCKER_PASS% | docker login docker.io -u %DOCKER_USER% --password-stdin
-                docker push %IMAGE_ML%:%BUILD_TAG%
-                docker push %IMAGE_ML%:latest
-                docker push %IMAGE_WEB%:%BUILD_TAG%
-                docker push %IMAGE_WEB%:latest
-                docker logout docker.io
-            '''
+           bat '''
+    @echo off
+    echo %DOCKER_PASS% | "C:\\Users\\raksh\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" login docker.io -u %DOCKER_USER% --password-stdin
+    "C:\\Users\\raksh\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" push %IMAGE_ML%:%BUILD_TAG%
+    "C:\\Users\\raksh\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" push %IMAGE_ML%:latest
+    "C:\\Users\\raksh\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" push %IMAGE_WEB%:%BUILD_TAG%
+    "C:\\Users\\raksh\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" push %IMAGE_WEB%:latest
+    "C:\\Users\\raksh\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" logout docker.io
+'''
         }
     }
 }
